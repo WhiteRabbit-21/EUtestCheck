@@ -4,6 +4,9 @@
 
 // github project blackjack
 
+std::vector<std::string> suitCheck; 
+std::vector<std::string> faceCheck;
+
 void exit_func() {
 	bool ask;
 	std::cout << "Do you wnat to continue? 1/0" << std::endl;
@@ -11,6 +14,49 @@ void exit_func() {
 
 	if (ask != 1) {
 		exit(0);
+	}
+}
+
+int hiLowCount(std::string face) {
+	int count = 0;
+
+	int val = 0;
+	if (face == "Two" || face == "Three" || face == "Four" || face == "Five" || face == "Six") {
+		val = 1;
+	}
+	else if (face == "Seven" || face == "Eight" || face == "Nine") {
+		val = 0;
+	}
+	else {
+		val = -1;
+	}
+
+	count += val;
+
+	return count;
+}
+
+void CheckFunction(std::string suit, std::string face) {
+
+	//std::vector <std::string> suitCheck;
+	//std::vector <std::string> faceCheck;
+
+	bool cardIsUnique = true;
+
+	for (int i = 0; i < suitCheck.size(); i++)
+	{
+		for (int i = 0; i < faceCheck.size(); i++)
+		{
+			if (suit == suitCheck[i] && face == faceCheck[i]) {
+				cardIsUnique = false;
+			}
+
+		}
+	}
+
+	if (cardIsUnique) { // is true
+		suitCheck.push_back(suit);
+		faceCheck.push_back(face);
 	}
 }
 
@@ -58,17 +104,22 @@ int cardGeneration(std::vector <std::string> suit, std::vector <std::string> fac
 	int i = 0;
 	int CntCard = 2;
 	int sumPlayer = 0;
-	int randomNumber;
+	int randomNumberSuit;
+	int randomNumberFace;
+
 	
 
 	while (i < CntCard) {
 
-		randomNumber = rand() % suit.size();
-		std::cout << "Suit is: " << suit[randomNumber] << std::endl;
-		randomNumber = rand() % face.size();
-		std::cout << "Face is: " << face[randomNumber] << std::endl;
+		randomNumberSuit = rand() % suit.size();
+		std::cout << "Suit is: " << suit[randomNumberSuit] << std::endl;
+		randomNumberFace = rand() % face.size();
+		std::cout << "Face is: " << face[randomNumberFace] << std::endl;
 		//CntCard++;
-		countingValues(face[randomNumber], sumPlayer);
+		countingValues(face[randomNumberFace], sumPlayer);
+		//
+		CheckFunction(suit[randomNumberSuit], face[randomNumberFace]);
+
 
 		if (sumPlayer > 21) {
 			std::cout << "Dealer Wins" << std::endl;
@@ -99,8 +150,8 @@ void checkWin(int sumPlayer, int sumDealer) {
 		std::cout << "Player Wins" << std::endl;
 	if (sumDealer > 21)
 		std::cout << "Player Wins" << std::endl;
-	if (sumPlayer > 21)
-		std::cout << "Dealers Wins" << std::endl;
+	//if (sumPlayer > 21)
+		//std::cout << "Dealers Wins 121212" << std::endl;
 	if (sumDealer > sumPlayer && sumDealer < 22) {
 		std::cout << "Dealers Wins" << std::endl;
 	}
@@ -109,6 +160,28 @@ void checkWin(int sumPlayer, int sumDealer) {
 	}
 	//return 0;
 }
+
+int DealersCardGeneration(std::vector <std::string> suit, std::vector <std::string> face, int &tmpcard) {
+	int i = 0;
+	int randomNumberFace;
+	int randomNumberSuit;
+	int sumPlayer = 0;
+
+	randomNumberSuit = rand() % suit.size();
+	std::cout << "Suit is: " << suit[randomNumberSuit] << std::endl;
+	randomNumberFace = rand() % face.size();
+	std::cout << "Face is: " << face[randomNumberFace] << std::endl;
+	//
+	CheckFunction(suit[randomNumberSuit], face[randomNumberFace]);
+	//
+	tmpcard = hiLowCount(face[randomNumberFace]);
+	//
+	countingValues(face[randomNumberFace], sumPlayer);
+
+	return sumPlayer;
+}
+
+
 
 int main() {
 
@@ -128,20 +201,53 @@ int main() {
 	//std::cout << "Rand num: " << randomNumber << std::endl;
 
 	//bool isGame;
-	while (true) {
+	//std::vector <std::string> suitCheck;
+	//std::vector <std::string> faceCheck;
+	int cntCard=0;
+	while (true) { // Gaming process
+
+		
+		sumDealer = DealersCardGeneration(suit, face, cntCard);
+		std::cout << "First dealers card: " << sumDealer << std::endl;
 
 		sumPlayer = cardGeneration(suit, face);
 		//checkWin(sumPlayer, sumDealer);
-		std::cout << "Sum is: " << sumPlayer << std::endl;
-		sumDealer = cardGeneration(suit, face);
+		std::cout << "Sum player is: " << sumPlayer << std::endl;
+
+
+		// €кщо сума гравц€ б≥льше за 21, то пропускаЇмо другу генерац≥ю карти
+		// 
+		//dealersCardGeneration
+
+		while (true) {
+			if (sumPlayer < 21) {
+				int tmp = DealersCardGeneration(suit, face, cntCard);
+				sumDealer += tmp;
+
+
+				std::cout << "Cntcrad: " << cntCard << std::endl;
+				std::cout << std::endl;
+
+				std::cout << "Second dealers card: " << sumDealer << std::endl;
+				if (sumDealer >= 17) {
+					break;
+				}
+			}
+			else
+				break;
+		}
+		
+		//sumDealer = cardGeneration(suit, face);
 		checkWin(sumPlayer, sumDealer);
+
+		sumDealer = 0;
+		sumPlayer = 0;
 		exit_func();
 
 		system("cls");
 	}
-	// розробити процесс гри таким чином, спочатку показуЇтьс€ 1 карта дилера, пот≥м 2 карти гравц€, пот≥м 2-га карта дилера, ≥ €кщо потр≥бна 3-т€...
-	// написати простий алгоритм прийн€тт€ р≥шень дилером - €кщо к≥льк≥сть очок дилера 17 або б≥льше, то в≥н не бере б≥льше карти
-	// в ≥ншому випадку бере до тих п≥р поки сума не буде б≥льше дор≥внювати 17
+
+
 	// розробити перев≥рку на вже застосован≥ карти, щоб в оодномук роз≥граш≥ не було застосовано 2 однаков≥ карти туз черв + туз черв, 
 	// €кщо карти зб≥гаютьс€ - згенерувати нову (можна зробити масив з вже згенерованими картами)
 }
